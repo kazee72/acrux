@@ -120,18 +120,15 @@ impl Lexer {
     }
 
     fn read_number(&self) -> Token {
-        // Dummy return
-        Token { kind: TokenKind::Affix, line: 0 }
+        todo!()
     }
 
     fn read_string(&self) -> Token {
-        // Dummy return
-        Token { kind: TokenKind::Affix, line: 0 }
+        todo!()
     }
 
     fn read_identifier(&self) -> Token {
-        // Dummy return
-        Token { kind: TokenKind::Affix, line: 0 }
+        todo!()
     }
 }
 
