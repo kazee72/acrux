@@ -1,11 +1,11 @@
 
 
 
-struct Program {
-    statements: Vec<Statement>
+pub struct Program {
+    pub statements: Vec<Statement>
 }
 
-enum Statement {
+pub enum Statement {
     VariableDeclaration {
         name: String,
         value: Expression,
@@ -35,7 +35,7 @@ enum Statement {
     ExpressionStatement(Expression)
 }
 
-enum Expression {
+pub enum Expression {
     IntegerLiteral(i64),
     FloatLiteral(f64),
     StringLiteral(String),
@@ -61,7 +61,7 @@ enum Expression {
     }
 }
 
-enum Operator {
+pub enum Operator {
     Plus,
     Minus,
     Mult,
@@ -76,7 +76,7 @@ enum Operator {
     Or
 }
 
-enum UnaryOperator {
+pub enum UnaryOperator {
     Minus,
     Not
 }
