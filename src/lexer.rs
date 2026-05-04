@@ -119,16 +119,102 @@ impl Lexer {
         self.source.get(pos).copied()
     }
 
-    fn read_number(&self) -> Token {
-        todo!()
+    fn read_number(&mut self) -> Token {
+        let mut is_float = false;
+        let mut collected_number_string = String::new();
+
+        loop {
+            match self.peek(self.pos) {
+                Some(ch) => {
+                    if ch.is_ascii_digit() {
+                        collected_number_string.push(ch);
+                    } else if ch == '.' && !is_float {
+                        is_float = true;
+                        collected_number_string.push(ch);
+                    } else {
+                        break;
+                    }
+                },
+                _ => break
+            }
+            self.pos += 1;
+        }
+
+        if is_float {
+            let collected_float = collected_number_string.parse::<f64>().unwrap();
+            Token { kind: TokenKind::Float(collected_float), line: self.line }
+        } else {
+            let collected_int = collected_number_string.parse::<i64>().unwrap();
+            Token { kind: TokenKind::Integer(collected_int), line: self.line }
+        }
+
+
     }
 
-    fn read_string(&self) -> Token {
-        todo!()
+    fn read_string(&mut self) -> Token {
+        let mut collected_string = String::new();
+
+        self.pos += 1;
+
+        loop {
+            match self.peek(self.pos) {
+                Some('"') => {
+                    self.pos += 1;
+                    break;
+                },
+                Some(ch) => {
+                    if ch == '\n' { self.line += 1; }
+                    collected_string.push(ch);
+                    self.pos += 1;
+                },
+                None => break
+            }
+        }
+
+        Token { kind: TokenKind::StringLit(collected_string), line: self.line }
+    }
+    
+    fn lookup_keyword(keyword: &str) -> TokenKind {
+        match keyword {
+            "affix" => TokenKind::Affix,
+            "crux" => TokenKind::Crux,
+            "vox" => TokenKind::Vox,
+            "apex" => TokenKind::Apex,
+            "if" => TokenKind::If,
+            "else" => TokenKind::Else,
+            "while" => TokenKind::While,
+            "for" => TokenKind::For,
+            "true" => TokenKind::True,
+            "false" => TokenKind::False,
+
+            _ => TokenKind::Identifier(keyword.to_string())
+        }
     }
 
-    fn read_identifier(&self) -> Token {
-        todo!()
+    fn read_identifier(&mut self) -> Token {
+        let mut collected_string = String::new();
+
+        loop {
+            match self.peek(self.pos) {
+                Some(ch) => {
+                    if ch.is_ascii_alphanumeric() || ch == '_' {
+                        collected_string.push(ch);
+                    } else {
+                        break;
+                    }
+                }
+
+                _ => break
+            }
+
+            self.pos += 1;
+        }
+
+        let token_kind = Lexer::lookup_keyword(collected_string.as_str());
+
+        Token { kind: token_kind, line: self.line }
     }
+
+    
 }
 
