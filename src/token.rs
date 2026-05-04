@@ -1,9 +1,13 @@
+#[derive(PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
     pub line: usize,
 }
 
+
+#[derive(PartialEq, Debug)]
 pub enum TokenKind {
+    // Keywords
     Affix,
     Crux,
     Vox,
@@ -12,9 +16,10 @@ pub enum TokenKind {
     Else,
     While,
     For,
-    Assign,
     True,
     False,
+    // Operators
+    Assign,
     Plus,
     Minus,
     Mult,
@@ -28,16 +33,19 @@ pub enum TokenKind {
     NotEq,
     GtEq,
     LtEq,
+    // Delimiters
     Semicolon,
     Comma,
     LParen,
     RParen,
     LCurly,
     RCurly,
+    // Literals
     Integer(i64),
     Float(f64),
     StringLit(String),
     Identifier(String),
+    // Other
     EOF,
     Unknown(char)
 }
