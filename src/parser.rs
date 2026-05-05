@@ -1,4 +1,4 @@
-use crate::{ast::{Program, Statement}, lexer::Lexer, token::{Token, TokenKind}};
+use crate::{ast::{Expression, Program, Statement}, lexer::Lexer, token::{Token, TokenKind}};
 
 
 
@@ -39,6 +39,16 @@ impl Parser {
         }
     }
 
+    fn expect_identifier(&mut self) -> String {
+        if let TokenKind::Identifier(name) = &self.current.kind {
+            let name = name.to_string();
+            self.advance();
+            name
+        } else {
+            panic!("Syntax Error: expected Identifier, got {:?} instead on line {}", self.current.kind, self.current.line);
+        }
+    }
+
     fn parse_program(&mut self) -> Program {
         let mut statements: Vec<Statement> = Vec::new();
 
@@ -54,8 +64,141 @@ impl Parser {
         Program { statements }
     }
 
-    fn parse_statement(&self) -> Statement {
-        todo!();
+    fn parse_statement(&mut self) -> Statement {
+
+        match self.current.kind {
+            TokenKind::Affix => self.parse_variable_declaration(),
+            TokenKind::Crux => self.parse_function_declaration(),
+            TokenKind::Apex => self.parse_return(),
+            TokenKind::Vox => self.parse_print(),
+            TokenKind::If => self.parse_if(),
+            TokenKind::While => self.parse_while(),
+            TokenKind::For => self.parse_for(),
+            _ => self.parse_expression_statement()
+        }
     }
+    
+    fn parse_variable_declaration(&mut self) -> Statement {
+
+        self.advance();
+        let var_name = self.expect_identifier();
+        self.advance();
+        self.expect(TokenKind::Assign);
+        let value = self.parse_expression();
+        self.expect(TokenKind::Semicolon);
+
+        Statement::VariableDeclaration { name: var_name, value }
+    }
+
+    fn parse_function_declaration(&mut self) -> Statement {
+
+        self.advance();
+        let func_name = self.expect_identifier();
+        self.expect(TokenKind::LParen);
+        let mut params: Vec<String> = Vec::new();
+
+        while !self.current_is(TokenKind::RParen) {
+            let param_name = self.expect_identifier();
+            params.push(param_name);
+            if self.current_is(TokenKind::Comma) {
+                self.advance();
+            }
+        }
+
+        self.expect(TokenKind::RParen);
+        self.expect(TokenKind::LCurly);
+
+        let mut body: Vec<Statement> = Vec::new();
+
+        while !self.current_is(TokenKind::RCurly) {
+            if self.current_is(TokenKind::EOF) {
+                panic!("Syntax Error: expected '}}', '{{' never closed")
+            } else {
+                let stmt = self.parse_statement();
+                body.push(stmt);
+            }
+        }
+
+        self.advance();
+
+        Statement::FunctionDeclaration { name: func_name, parameters: params, body }
+        
+    }
+
+    fn parse_return(&mut self) -> Statement {
+        
+        self.advance();
+        let exp = self.parse_expression();
+        self.expect(TokenKind::Semicolon);
+
+        Statement::Return(exp)
+    }
+
+    fn parse_print(&mut self) -> Statement {
+        
+        self.advance();
+        let exp = self.parse_expression();
+        self.expect(TokenKind::Semicolon);
+
+        Statement::Print(exp)
+    }
+
+    fn parse_if(&mut self) -> Statement {
+        
+        self.advance();
+        self.expect(TokenKind::LParen);
+        let condition = self.parse_expression();
+        self.expect(TokenKind::RParen);
+        self.expect(TokenKind::LCurly);
+
+        let mut consequence_stmts: Vec<Statement> = Vec::new();
+
+        while !self.current_is(TokenKind::RCurly) {
+            if self.current_is(TokenKind::EOF) {
+                panic!("Syntax Error: expected '}}', '{{' never closed")
+            } else {
+                let stmt = self.parse_statement();
+                consequence_stmts.push(stmt);
+            }
+        }
+
+        self.advance();
+
+        let alternative = if self.current_is(TokenKind::Else) {
+            self.advance();
+            self.expect(TokenKind::LCurly);
+            let mut stmts: Vec<Statement> = Vec::new();
+            while !self.current_is(TokenKind::RCurly)  {
+                if self.current_is(TokenKind::EOF) {
+                    panic!("Syntax Error: expected '}}', '{{' never closed")
+                }
+                stmts.push(self.parse_statement());
+            }
+            self.advance();
+            Some(stmts)
+        } else {
+            None
+        };
+
+        Statement::If { condition, consequence: consequence_stmts, alternative }       
+    }
+
+    fn parse_while(&mut self) -> Statement {
+        todo!()
+    }
+
+    fn parse_for(&mut self) -> Statement {
+        todo!()
+    }
+
+    fn parse_expression_statement(&mut self) -> Statement {
+        todo!()
+    }
+
+    fn parse_expression(&mut self) -> Expression {
+        todo!()
+    }
+
+    
 
 }
