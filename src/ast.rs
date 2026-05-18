@@ -39,7 +39,7 @@ pub enum Expression {
     IntegerLiteral(i64),
     FloatLiteral(f64),
     StringLiteral(String),
-    BoolenLiteral(bool),
+    BooleanLiteral(bool),
     Null,
     Identifier(String),
     BinaryExpression {
